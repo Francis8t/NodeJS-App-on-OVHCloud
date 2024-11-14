@@ -14,13 +14,15 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Log in to DockerHub
-        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+        run: docker login -u $DOCKERHUB_USERNAME --password-stdin <<< "${{ secrets.DOCKERHUB_PASSWORD }}"
+       # echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
 
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ovhcloud-node-app .
+        run: docker build -t francis8t/ovhcloud-node-app .
 
       - name: Push Docker image to DockerHub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/ovhcloud-node-app
+        run: docker push francis8t/ovhcloud-node-app
 
       - name: SSH to OVHCloud Instance and Deploy
         uses: appleboy/ssh-action@v0.1.7
@@ -28,10 +30,10 @@ jobs:
           host: ${{ secrets.OVH_SERVER_IP }}
           username: ${{ secrets.OVH_SERVER_USERNAME }}
           key: ${{ secrets.OVH_SSH_PRIVATE_KEY }}
-          envs: DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
           script: |
-            docker login -u $DOCKERHUB_USERNAME -p ${{ secrets.DOCKERHUB_PASSWORD }}
+            echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker pull $DOCKERHUB_USERNAME/ovhcloud-node-app
             docker stop ovhcloud-node-app || true
             docker rm ovhcloud-node-app || true
             docker run -d --name ovhcloud-node-app -p 80:3000 $DOCKERHUB_USERNAME/ovhcloud-node-app
+
