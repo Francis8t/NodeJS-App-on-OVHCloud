@@ -32,7 +32,7 @@ jobs:
           script: |
             echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker pull francis8t/ovhcloud-node-app
-            docker stop francis8t/ovhcloud-node-app || true
-            docker rm francis8t/ovhcloud-node-app || true
+            docker stop ovhcloud-node-app || true
+            docker rm ovhcloud-node-app || true
             docker run -d --name ovhcloud-node-app -p 80:3000 francis8t/ovhcloud-node-app
 
